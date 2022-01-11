@@ -32,14 +32,17 @@ impl Metadata for ObjectMetadata {
     }
 
     fn is_symlink(&self) -> bool {
+        // TODO: implement this
         false
     }
 
     fn gid(&self) -> u32 {
+        // TODO: implement this
         0
     }
 
     fn uid(&self) -> u32 {
+        // TODO: implement this
         0
     }
     
