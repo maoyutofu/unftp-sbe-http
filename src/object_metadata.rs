@@ -45,5 +45,4 @@ impl Metadata for ObjectMetadata {
         // TODO: implement this
         0
     }
-    
 }

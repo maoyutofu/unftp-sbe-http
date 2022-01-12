@@ -5,13 +5,14 @@ use chrono::prelude::*;
 use libunftp::storage::{Error, ErrorKind, Fileinfo};
 use serde::{de, Deserialize};
 use std::fmt::Display;
-use std::str::FromStr;
 use std::path::PathBuf;
+use std::str::FromStr;
+use std::time::SystemTime;
 
 #[derive(Deserialize, Debug)]
 pub(crate) struct ResponseBody {
     items: Option<Vec<Item>>,
-    prefixes: Option<Vec<String>>
+    prefixes: Option<Vec<String>>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -25,8 +26,12 @@ pub(crate) struct Item {
     md5_hash: String,
 }
 
-fn item_size_deserializer<'de, T, D>(deserializer: D) -> Result<T, D::Error> 
-where T: FromStr, T::Err: Display, D: de::Deserializer<'de> {
+fn item_size_deserializer<'de, T, D>(deserializer: D) -> Result<T, D::Error>
+where
+    T: FromStr,
+    T::Err: Display,
+    D: de::Deserializer<'de>,
+{
     let s = String::deserialize(deserializer)?;
     s.parse().map_err(de::Error::custom)
 }
@@ -34,19 +39,19 @@ where T: FromStr, T::Err: Display, D: de::Deserializer<'de> {
 impl ResponseBody {
     pub(crate) fn list(self) -> Result<Vec<Fileinfo<PathBuf, ObjectMetadata>>, Error> {
         let files: Vec<Fileinfo<PathBuf, ObjectMetadata>> = self.items.map_or(Ok(vec![]), move |items: Vec<Item>| {
-            items.iter()
-            .filter(|item: &&Item| !item.name.ends_with('/'))
-            .map(move |item: &Item| item.to_file_info())
-            .collect()
+            items
+                .iter()
+                .filter(|item: &&Item| !item.name.ends_with('/'))
+                .map(move |item: &Item| item.to_file_info())
+                .collect()
         })?;
-
         let dirs: Vec<Fileinfo<PathBuf, ObjectMetadata>> = self.prefixes.map_or(Ok(vec![]), |prefixes: Vec<String>| {
-            prefixes.iter()
-            .filter(|prefix| *prefix != "//")
-            .map(|prefix| prefix_to_file_info(prefix))
-            .collect()
+            prefixes
+                .iter()
+                .filter(|prefix| *prefix != "//")
+                .map(|prefix| prefix_to_file_info(prefix))
+                .collect()
         })?;
-        
         let result: &mut Vec<Fileinfo<PathBuf, ObjectMetadata>> = &mut vec![];
         result.extend(dirs);
         result.extend(files);
@@ -55,7 +60,7 @@ impl ResponseBody {
 }
 
 impl Item {
-    pub(crate) fn to_metadata(&self) -> Result<ObjectMetadata , Error> {
+    pub(crate) fn to_metadata(&self) -> Result<ObjectMetadata, Error> {
         Ok(ObjectMetadata {
             size: self.size,
             last_updated: Some(self.updated.into()),
@@ -67,23 +72,23 @@ impl Item {
         let path: PathBuf = PathBuf::from(self.name.clone());
         let metadata: ObjectMetadata = self.to_metadata()?;
 
-        Ok(Fileinfo {
-            path,
-            metadata,
-        })
+        Ok(Fileinfo { path, metadata })
     }
 
     pub(crate) fn to_md5(&self) -> Result<String, Error> {
-        let md5 = base64::decode(&self.md5_hash).map_err(|e| Error::new(ErrorKind::LocalError, e))?;
+        let md5 =
+            base64::decode(&self.md5_hash).map_err(|e| Error::new(ErrorKind::LocalError, e))?;
         Ok(md5.iter().map(|b| format!("{:02x}", b)).collect())
     }
 }
 
-pub(crate) fn prefix_to_file_info(prefix: &str) -> Result<Fileinfo<PathBuf, ObjectMetadata>, Error> {
+pub(crate) fn prefix_to_file_info(
+    prefix: &str,
+) -> Result<Fileinfo<PathBuf, ObjectMetadata>, Error> {
     Ok(Fileinfo {
         path: prefix.into(),
         metadata: ObjectMetadata {
-            last_updated: None,
+            last_updated: Some(SystemTime::now()),
             is_file: false,
             size: 0,
         },
@@ -116,7 +121,8 @@ mod test {
 
     #[test]
     fn to_metadata_parse_error() {
-        let response: serde_json::error::Result<Item> = serde_json::from_str(r#"{"name":"", "updated":"2020-09-01T12:13:14Z", "size":50}"#);
+        let response: serde_json::error::Result<Item> =
+            serde_json::from_str(r#"{"name":"", "updated":"2020-09-01T12:13:14Z", "size":50}"#);
         assert_eq!(response.err().unwrap().is_data(), true);
     }
 }
