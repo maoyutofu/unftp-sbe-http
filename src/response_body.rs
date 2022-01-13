@@ -38,20 +38,22 @@ where
 
 impl ResponseBody {
     pub(crate) fn list(self) -> Result<Vec<Fileinfo<PathBuf, ObjectMetadata>>, Error> {
-        let files: Vec<Fileinfo<PathBuf, ObjectMetadata>> = self.items.map_or(Ok(vec![]), move |items: Vec<Item>| {
-            items
-                .iter()
-                .filter(|item: &&Item| !item.name.ends_with('/'))
-                .map(move |item: &Item| item.to_file_info())
-                .collect()
-        })?;
-        let dirs: Vec<Fileinfo<PathBuf, ObjectMetadata>> = self.prefixes.map_or(Ok(vec![]), |prefixes: Vec<String>| {
-            prefixes
-                .iter()
-                .filter(|prefix| *prefix != "//")
-                .map(|prefix| prefix_to_file_info(prefix))
-                .collect()
-        })?;
+        let files: Vec<Fileinfo<PathBuf, ObjectMetadata>> =
+            self.items.map_or(Ok(vec![]), move |items: Vec<Item>| {
+                items
+                    .iter()
+                    .filter(|item: &&Item| !item.name.ends_with('/'))
+                    .map(move |item: &Item| item.to_file_info())
+                    .collect()
+            })?;
+        let dirs: Vec<Fileinfo<PathBuf, ObjectMetadata>> =
+            self.prefixes.map_or(Ok(vec![]), |prefixes: Vec<String>| {
+                prefixes
+                    .iter()
+                    .filter(|prefix| *prefix != "//")
+                    .map(|prefix| prefix_to_file_info(prefix))
+                    .collect()
+            })?;
         let result: &mut Vec<Fileinfo<PathBuf, ObjectMetadata>> = &mut vec![];
         result.extend(dirs);
         result.extend(files);

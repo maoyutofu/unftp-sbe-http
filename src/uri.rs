@@ -18,7 +18,7 @@ impl HttpUri {
         Self {
             base_url,
             bucket,
-            root
+            root,
         }
     }
 
@@ -151,10 +151,7 @@ mod tests {
 
         let s = "http://localhost:8088/v1/b/anfang/o?prefix";
         for test in tests.iter() {
-            let uri = HttpUri::new(
-                "http://localhost:8088".to_string(),
-                "anfang".to_string(),
-            );
+            let uri = HttpUri::new("http://localhost:8088".to_string(), "anfang".to_string());
             assert_eq!(
                 format!("{}={}", s, test.expected_prefix),
                 uri.list(test.sub).unwrap().to_string()

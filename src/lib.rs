@@ -9,6 +9,8 @@ use reqwest::header::HeaderValue;
 use response_body::{Item, ResponseBody};
 use tokio::io::AsyncRead;
 
+pub use ext::ServerExt;
+use futures::TryStreamExt;
 use libunftp::auth::UserDetail;
 use libunftp::storage::{Error, ErrorKind, Fileinfo, Metadata, StorageBackend};
 use object_metadata::ObjectMetadata;
@@ -20,7 +22,6 @@ use std::{
 use tokio::io::BufReader;
 use tokio_util::codec::{BytesCodec, FramedRead};
 use uri::HttpUri;
-pub use ext::ServerExt;
 
 #[derive(Clone, Debug)]
 pub struct HttpFileSystem {
@@ -60,21 +61,23 @@ impl<User: UserDetail> StorageBackend<User> for HttpFileSystem {
 
         let token = self.token.clone();
 
-        if let Ok(res) = client.post(url)
+        if let Ok(res) = client
+            .post(url)
             .header(
                 header::AUTHORIZATION,
                 HeaderValue::from_str(format!("Bearer {}", token).as_str()).unwrap(),
             )
             .send()
-            .await {
-                if let Ok(item) = res.json::<Item>().await {
-                    item.to_metadata()
-                } else {
-                    Err(Error::from(ErrorKind::PermanentFileNotAvailable))
-                }
+            .await
+        {
+            if let Ok(item) = res.json::<Item>().await {
+                item.to_metadata()
             } else {
                 Err(Error::from(ErrorKind::PermanentFileNotAvailable))
             }
+        } else {
+            Err(Error::from(ErrorKind::PermanentFileNotAvailable))
+        }
     }
 
     async fn list<P: AsRef<Path> + Send + Debug>(
@@ -91,21 +94,23 @@ impl<User: UserDetail> StorageBackend<User> for HttpFileSystem {
 
         let token = self.token.clone();
 
-        if let Ok(res) = client.get(url)
+        if let Ok(res) = client
+            .get(url)
             .header(
                 header::AUTHORIZATION,
                 HeaderValue::from_str(format!("Bearer {}", token).as_str()).unwrap(),
             )
             .send()
-            .await {
-                if let Ok(response_body) = res.json::<ResponseBody>().await {
-                    response_body.list()
-                } else {
-                    Err(Error::from(ErrorKind::PermanentFileNotAvailable))
-                }
+            .await
+        {
+            if let Ok(response_body) = res.json::<ResponseBody>().await {
+                response_body.list()
             } else {
                 Err(Error::from(ErrorKind::PermanentFileNotAvailable))
             }
+        } else {
+            Err(Error::from(ErrorKind::PermanentFileNotAvailable))
+        }
     }
 
     async fn get<P: AsRef<Path> + Send + Debug>(
@@ -142,10 +147,9 @@ impl<User: UserDetail> StorageBackend<User> for HttpFileSystem {
                 header::CONTENT_TYPE,
                 HeaderValue::from_static("application/octet-stream"),
             )
-            .body(Body::wrap_stream(FramedRead::new(
-                reader,
-                BytesCodec::new(),
-            )))
+            .body(Body::wrap_stream(
+                FramedRead::new(reader, BytesCodec::new()).map_ok(|b| b.freeze()),
+            ))
             .send()
             .await
         {
