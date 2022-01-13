@@ -114,7 +114,7 @@ impl<User: UserDetail> StorageBackend<User> for HttpFileSystem {
         _path: P,
         _start_pos: u64,
     ) -> Result<Box<dyn AsyncRead + Send + Sync + Unpin>, Error> {
-        todo!()
+        Err(Error::from(ErrorKind::CommandNotImplemented))
     }
 
     async fn put<P: AsRef<Path> + Send + Debug, B: AsyncRead + Send + Sync + Unpin + 'static>(
@@ -164,7 +164,7 @@ impl<User: UserDetail> StorageBackend<User> for HttpFileSystem {
         _user: &User,
         _path: P,
     ) -> Result<(), Error> {
-        todo!()
+        Err(Error::from(ErrorKind::CommandNotImplemented))
     }
 
     async fn mkd<P: AsRef<Path> + Send + Debug>(
@@ -172,7 +172,7 @@ impl<User: UserDetail> StorageBackend<User> for HttpFileSystem {
         _user: &User,
         _path: P,
     ) -> Result<(), Error> {
-        todo!()
+        Err(Error::from(ErrorKind::CommandNotImplemented))
     }
 
     async fn rename<P: AsRef<Path> + Send + Debug>(
@@ -181,7 +181,7 @@ impl<User: UserDetail> StorageBackend<User> for HttpFileSystem {
         _from: P,
         _to: P,
     ) -> Result<(), Error> {
-        todo!()
+        Err(Error::from(ErrorKind::CommandNotImplemented))
     }
 
     async fn rmd<P: AsRef<Path> + Send + Debug>(
@@ -189,13 +189,13 @@ impl<User: UserDetail> StorageBackend<User> for HttpFileSystem {
         _user: &User,
         _path: P,
     ) -> Result<(), Error> {
-        todo!()
+        Err(Error::from(ErrorKind::CommandNotImplemented))
     }
 
     async fn cwd<P: AsRef<Path> + Send + Debug>(
         &self,
         _user: &User,
-        path: P,
+        _path: P,
     ) -> Result<(), Error> {
         Ok(())
     }
