@@ -11,3 +11,6 @@ unftp http 后端存储/桥接器。以http作为后端存储接口，你只要�
 - [ ] Rename
 - [ ] mkd
 - [ ] rmd
+
+支持认证，可以在header中添加：
+Authorization: Bearer token
