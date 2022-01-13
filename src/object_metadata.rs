@@ -1,4 +1,4 @@
-// https://github.com/bolcom/libunftp/blob/master/crates/unftp-sbe-gcs/src/object_metadata.rs
+// Please refer to: https://github.com/bolcom/libunftp/blob/master/crates/unftp-sbe-gcs/src/object_metadata.rs
 
 use libunftp::storage::Metadata;
 use libunftp::storage::{Error, ErrorKind};

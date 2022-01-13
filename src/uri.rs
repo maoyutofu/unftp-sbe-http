@@ -1,4 +1,4 @@
-// https://github.com/bolcom/libunftp/blob/master/crates/unftp-sbe-gcs/src/uri.rs
+// Please refer to: https://github.com/bolcom/libunftp/blob/master/crates/unftp-sbe-gcs/src/uri.rs
 
 use libunftp::storage::{Error, ErrorKind};
 use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
@@ -149,10 +149,10 @@ mod tests {
             },
         ];
 
-        let s = "http://localhost:18088/v1/b/anfang/o?prefix";
+        let s = "http://localhost:8088/v1/b/anfang/o?prefix";
         for test in tests.iter() {
             let uri = HttpUri::new(
-                "http://localhost:18088".to_string(),
+                "http://localhost:8088".to_string(),
                 "anfang".to_string(),
             );
             assert_eq!(

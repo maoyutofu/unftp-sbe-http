@@ -1,4 +1,4 @@
-// https://github.com/bolcom/libunftp/blob/master/crates/unftp-sbe-gcs/src/response_body.rs
+// Please refer to: https://github.com/bolcom/libunftp/blob/master/crates/unftp-sbe-gcs/src/response_body.rs
 
 use super::ObjectMetadata;
 use chrono::prelude::*;
@@ -117,6 +117,23 @@ mod test {
         assert_eq!(metadata.size, 50);
         assert_eq!(metadata.modified().unwrap(), sys_time);
         assert_eq!(metadata.is_file, true);
+    }
+
+    #[test]
+    fn to_md5() {
+        let sys_time = SystemTime::now();
+        let date_time = DateTime::from(sys_time);
+
+        let item = Item {
+            name: "".into(),
+            updated: date_time,
+            size: 50,
+            md5_hash: "ZTEwYWRjMzk0OWJhNTlhYmJlNTZlMDU3ZjIwZjg4M2U=".into(),
+        };
+
+        let buff = b"e10adc3949ba59abbe56e057f20f883e";
+        let md5: String = buff.iter().map(|b| format!("{:02x}", b)).collect();
+        assert_eq!(item.to_md5().unwrap(), md5);
     }
 
     #[test]
