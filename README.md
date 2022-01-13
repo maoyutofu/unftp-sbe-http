@@ -11,3 +11,9 @@ unftp http backend storage/bridging. With http as the backend storage interface,
 - [ ] Rename
 - [ ] mkd
 - [ ] rmd
+
+## document
+[https://www.showdoc.com.cn/ush](https://www.showdoc.com.cn/ush)
+
+Support authentication, can be added in the header:  
+Authorization: Bearer token
